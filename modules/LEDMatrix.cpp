@@ -45,9 +45,9 @@ int LEDMatrix::getScanLimit() const {
     return this->scanLimit;
 }
 
-void LEDMatrix::setScanLimit(int limit) {
-    this->scanLimit = limit;
-    send(OP_SCANLIMIT, limit);
+void LEDMatrix::setScanLimit(int sLimit) {
+    this->scanLimit = sLimit;
+    send(OP_SCANLIMIT, sLimit);
 }
 
 bool LEDMatrix::isDecodeMode() const {
@@ -85,12 +85,13 @@ void LEDMatrix::clearDisplay() {
     delay(1000);
 }
 
-void LEDMatrix::sendByte(unsigned char data) {
+
+void LEDMatrix::sendByte(char data) {
     for (int i = 8; i > 0; i--) {
-        unsigned char mask = 1 << (i - 1);
+        char bitMask = 1 << (i - 1);
         digitalWrite(clk, LOW);
 
-        if (data & mask) {
+        if (data & bitMask) {
             digitalWrite(din, HIGH);
         } else {
             digitalWrite(din, LOW);
@@ -100,7 +101,7 @@ void LEDMatrix::sendByte(unsigned char data) {
     }
 }
 
-void LEDMatrix::send(unsigned char opcode, unsigned char segment) {
+void LEDMatrix::send(char opcode, char segment) {
     digitalWrite(load, LOW);
 
     sendByte(opcode);

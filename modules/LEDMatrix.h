@@ -11,7 +11,7 @@ public:
 
     void show(long distance_CM);
 
-    void send(unsigned char opcode, unsigned char segment);
+    void send(char opcode, char segment);
 
     int getBrightness() const;
 
@@ -41,7 +41,7 @@ private:
 
     int getSmiley(long distance);
 
-    void sendByte(unsigned char data);
+    void sendByte(char data);
 
     int lastSmiley = -2;
 

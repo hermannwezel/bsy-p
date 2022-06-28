@@ -16,8 +16,8 @@ using namespace std;
  * Zeit abfragen
  *
  */
-const int MAX_RUNTIME = 1;
-auto timeEnd = chrono::system_clock::now() + chrono::minutes(MAX_RUNTIME);
+const int MAX_RUNTIME_M = 1;
+auto timeEnd = chrono::system_clock::now() + chrono::minutes(MAX_RUNTIME_M);
 
 void checkAlive(bool &isActive) {
     auto timeNow = chrono::system_clock::now();
@@ -30,7 +30,7 @@ void checkAlive(bool &isActive) {
 
 /*
  *
- * StepperMotor (Thread 1)
+ * Schrittmotor (Thread 1)
  *
  */
 const int GPIO_A1 = 6;
@@ -62,7 +62,7 @@ void thread1(Semaphore &sem, bool &isActive) {
 
 /*
  *
- * Ultraschall Abstandsensor (Thread 2)
+ * Ultraschallsensor (Thread 2)
  *
  */
 const int GPIO_ECHO = 21;
@@ -146,6 +146,6 @@ int main() {
     t2.join();
     t3.join();
 
-    cout << endl << "Automatisch beendet nach " << MAX_RUNTIME << "min" << endl;
+    cout << endl << "Automatisch beendet nach " << MAX_RUNTIME_M << "min." << endl;
     return 0;
 }
