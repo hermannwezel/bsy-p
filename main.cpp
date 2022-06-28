@@ -10,23 +10,8 @@
 
 using namespace std;
 
-
-/*
- *
- * Zeit abfragen
- *
- */
-const int MAX_RUNTIME_M = 1;
-auto timeEnd = chrono::system_clock::now() + chrono::minutes(MAX_RUNTIME_M);
-
-void checkAlive(bool &isActive) {
-    auto timeNow = chrono::system_clock::now();
-
-    if (timeNow > timeEnd) {
-        isActive = false;
-    }
-}
-
+// Maximale Laufzeit
+const int MAX_RUNTIME_MINUTES = 1;
 
 /*
  *
@@ -38,7 +23,7 @@ const int GPIO_B1 = 10;
 const int GPIO_A2 = 11;
 const int GPIO_B2 = 31;
 
-void thread1(Semaphore &sem, bool &isActive) {
+void thread1(Semaphore &sem, bool &isThreadActive) {
     bool active = true;
 
     sem.p(); // Schutz des kritischen Abschnitts
@@ -49,9 +34,8 @@ void thread1(Semaphore &sem, bool &isActive) {
 
     while (active) {
         sm.rotate();
-        checkAlive(isActive); // Schaut ob die Zeit abgelaufen ist
 
-        if (!isActive) {
+        if (!isThreadActive) {
             active = false;
         }
     }
@@ -68,7 +52,7 @@ void thread1(Semaphore &sem, bool &isActive) {
 const int GPIO_ECHO = 21;
 const int GPIO_TRIGGER = 22;
 
-void thread2(Semaphore &sem, bool &isActive, long &distance_CM) {
+void thread2(Semaphore &sem, bool &isThreadActive, long &distanceCM) {
     bool active = true;
 
     UltrasonicSensor uS = UltrasonicSensor(GPIO_TRIGGER, GPIO_ECHO);
@@ -76,15 +60,15 @@ void thread2(Semaphore &sem, bool &isActive, long &distance_CM) {
     while (active) {
         sem.p(); // Schutz des kritischen Abschnitts
 
-        distance_CM = uS.getDistance();
-        if (distance_CM > 0) {
-            cout << distance_CM << "cm" << endl;
-        }
+        try {
+            distanceCM = uS.getDistance();
+            cout << distanceCM << "cm" << endl;
+        } catch (range_error &e) {}
 
         sem.v(); // Freigabe des kritischen Abschnitts
         delay(1000);
 
-        if (!isActive) {
+        if (!isThreadActive) {
             active = false;
         }
     }
@@ -100,7 +84,7 @@ const int GPIO_DIN = 27;
 const int GPIO_LOAD = 28;
 const int GPIO_CLK = 29;
 
-void thread3(Semaphore &sem, bool &isActive, long &distance_CM) {
+void thread3(Semaphore &sem, bool &isThreadActive, long &distanceCM) {
     bool active = true;
 
     LEDMatrix ledMatrix = LEDMatrix(GPIO_DIN, GPIO_LOAD, GPIO_CLK);
@@ -109,15 +93,13 @@ void thread3(Semaphore &sem, bool &isActive, long &distance_CM) {
     while (active) {
         sem.p(); // Schutz des kritischen Abschnitts
 
-        if (distance_CM > 0) {
-            ledMatrix.show(distance_CM);
-            delay(1000);
-        }
+        ledMatrix.showSmiley(distanceCM);
+        delay(500);
 
         sem.v(); // Freigabe des kritischen Abschnitts
         delay(1000);
 
-        if (!isActive) {
+        if (!isThreadActive) {
             active = false;
         }
     }
@@ -134,18 +116,28 @@ int main() {
         return -1;
     }
 
-    bool isActive = true;
-    long distance_CM = -1;
+    bool isThreadActive = true;
+    auto timeEnd = chrono::system_clock::now() + chrono::minutes(MAX_RUNTIME_MINUTES);
+    long distanceCM = 0;
+
     Semaphore sem = Semaphore(2);
 
-    thread t1 = thread(thread1, ref(sem), ref(isActive));
-    thread t2 = thread(thread2, ref(sem), ref(isActive), ref(distance_CM));
-    thread t3 = thread(thread3, ref(sem), ref(isActive), ref(distance_CM));
+    thread t1 = thread(thread1, ref(sem), ref(isThreadActive));
+    thread t2 = thread(thread2, ref(sem), ref(isThreadActive), ref(distanceCM));
+    thread t3 = thread(thread3, ref(sem), ref(isThreadActive), ref(distanceCM));
+
+    while (isThreadActive) {
+        auto timeNow = chrono::system_clock::now();
+
+        if (timeNow > timeEnd) {
+            isThreadActive = false;
+        }
+    }
 
     t1.join();
     t2.join();
     t3.join();
 
-    cout << endl << "Automatisch beendet nach " << MAX_RUNTIME_M << "min." << endl;
+    cout << endl << "Automatisch beendet nach " << MAX_RUNTIME_MINUTES << "min." << endl;
     return 0;
 }

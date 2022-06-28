@@ -24,7 +24,7 @@ long UltrasonicSensor::recordLength() {
 
 bool UltrasonicSensor::isValid(long distance) {
 
-    if (distance < minDistance_CM || distance > maxDistance_CM) {
+    if (distance < minDistanceCM || distance > maxDistanceCM) {
         return false;
     }
 
@@ -37,11 +37,11 @@ long UltrasonicSensor::getDistance() {
     digitalWrite(trigger, LOW);
 
     duration = recordLength();
-    duration_CM = ((duration * (343.2 / 1000000)) / 2) * 100;
+    durationCM = ((duration * (343.2 / 1000000)) / 2) * 100;
 
-    if (!isValid(duration_CM)) {
-        return -1;
+    if (!isValid(durationCM)) {
+        throw std::range_error("out of range");
     }
 
-    return duration_CM;
+    return durationCM;
 }

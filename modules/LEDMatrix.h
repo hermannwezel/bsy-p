@@ -9,9 +9,9 @@ public:
 
     ~LEDMatrix();
 
-    void show(long distance_CM);
+    void showSmiley(long distance_CM);
 
-    void send(char opcode, char segment);
+    void send(unsigned char opcode, unsigned char segment);
 
     int getBrightness() const;
 
@@ -41,9 +41,9 @@ private:
 
     int getSmiley(long distance);
 
-    void sendByte(char data);
+    void sendByte(unsigned char data);
 
-    int lastSmiley = -2;
+    int lastSmiley = -1;
 
     int limit[2] = {6, 8};
     const int smileys[3][8] = {

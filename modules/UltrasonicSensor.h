@@ -18,9 +18,9 @@ private:
     long startTime;
     long endTime;
     long duration;
-    long duration_CM;
-    int minDistance_CM = 2;
-    int maxDistance_CM = 400;
+    long durationCM;
+    int minDistanceCM = 2;
+    int maxDistanceCM = 400;
 };
 
 

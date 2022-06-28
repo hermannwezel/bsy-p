@@ -29,6 +29,9 @@ LEDMatrix::LEDMatrix(int din, int load, int clk) {
 }
 
 LEDMatrix::~LEDMatrix() {
+    setDisplayTestMode(false);
+    setShutdownMode(false);
+    setDecodeMode(false);
     clearDisplay();
 }
 
@@ -86,9 +89,9 @@ void LEDMatrix::clearDisplay() {
 }
 
 
-void LEDMatrix::sendByte(char data) {
+void LEDMatrix::sendByte(unsigned char data) {
     for (int i = 8; i > 0; i--) {
-        char bitMask = 1 << (i - 1);
+        unsigned char bitMask = 1 << (i - 1);
         digitalWrite(clk, LOW);
 
         if (data & bitMask) {
@@ -101,7 +104,7 @@ void LEDMatrix::sendByte(char data) {
     }
 }
 
-void LEDMatrix::send(char opcode, char segment) {
+void LEDMatrix::send(unsigned char opcode, unsigned char segment) {
     digitalWrite(load, LOW);
 
     sendByte(opcode);
@@ -127,17 +130,16 @@ int LEDMatrix::getSmiley(long distance) {
     }
 
     // Keine Änderung
-    return -1;
+    throw std::exception();
 }
 
-void LEDMatrix::show(long distance_CM) {
-    int smiley = getSmiley(distance_CM);
-
-    if (smiley != -1) {
-        lastSmiley = smiley;;
+void LEDMatrix::showSmiley(long distanceCM) {
+    try {
+        int smiley = getSmiley(distanceCM);
+        lastSmiley = smiley;
         for (int i = 1; i <= 8; i++) {
             send(i, smileys[lastSmiley][i - 1]);
             delay(50);
         }
-    }
+    } catch (std::exception &e) {}
 }
